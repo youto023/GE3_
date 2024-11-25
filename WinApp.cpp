@@ -1,10 +1,8 @@
-
 #include "WinApp.h"
 #include<cmath>
 #include"externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_win32.cpp"
+#include "externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-//#include"Windows.h"
 //ウィンドウプロシージャ
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
@@ -12,9 +10,6 @@ LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 	{
 		return true;
 	}
-
-
-
 	//メッセージに応じてゲーム固有の処理を行う
 	switch (msg) {
 		//ウィンドウが破棄された
@@ -22,41 +17,23 @@ LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 		//osに対して、アプリの終了を伝える
 		PostQuitMessage(0);
 		return 0;
-
 	}
 
 	//標準のメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 
 }
-
-
-
-
-
-
-
-
-
-
 void WinApp::Initialiize()
 {
-	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
-
-
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 	//const int32_t kCLientWidth = 1280;
 	//const int32_t kCLientHeight = 720;
 
 	RECT wrc = { 0,0,kCLientWidth,kCLientHeight };
 
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
-
-
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
-
-	WNDCLASS wc{};
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
 
@@ -73,7 +50,7 @@ void WinApp::Initialiize()
 	RegisterClass(&wc);
 
 	//ウィンドウの生成
-	HWND hwnd = CreateWindow(
+	hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
@@ -97,16 +74,16 @@ void WinApp::Initialiize()
 	//	}
 	//#endif // DEBUG
 
-//#ifdef _DEBUG
-//	ID3D12Debug1* debugController = nullptr;
-//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-//		//デバックレイヤーを有効化する
-//		debugController->EnableDebugLayer();
-//		//さらにGPU側でもチェックを行うようにする
-//		debugController->SetEnableGPUBasedValidation(TRUE);
-//	}
-//
-//#endif
+	//#ifdef _DEBUG
+	//	ID3D12Debug1* debugController = nullptr;
+	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+	//		//デバックレイヤーを有効化する
+	//		debugController->EnableDebugLayer();
+	//		//さらにGPU側でもチェックを行うようにする
+	//		debugController->SetEnableGPUBasedValidation(TRUE);
+	//	}
+	//
+	//#endif
 
 	ShowWindow(hwnd, SW_SHOW);
 
@@ -116,4 +93,29 @@ void WinApp::Initialiize()
 
 void WinApp::Update()
 {
+}
+
+void WinApp::Finalize()
+{
+	CloseWindow(hwnd);
+
+	//終了処理
+	CoUninitialize();
+}
+
+bool WinApp::ProcessMessage()
+{
+	MSG msg{};
+	if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	if (msg.message == WM_QUIT)
+	{
+		return true;
+	}
+
+
+	return false;
 }
