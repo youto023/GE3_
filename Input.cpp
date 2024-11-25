@@ -4,14 +4,18 @@
 //#include<wrl.h>
 //#include<dinput.h>
 //using namespace Microsoft::WRL;
-void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
+void Input::Initialize(WinApp* winApp)
 {
 	HRESULT result;
+	//借りてきたWinAppのインスタンスを記録
+	this->winApp = winApp;
+
+
 
 	//DirectInputの初期化(一度だけ行う処理)
 	IDirectInput8* directInput = nullptr;
 	result = DirectInput8Create(
-		hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8,
 		(void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
@@ -27,7 +31,7 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 	//排他制御レベルのセット
 	result = keyboard->SetCooperativeLevel(
 
-		hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+		winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 }
 
@@ -64,4 +68,3 @@ bool Input::TriggerKey(BYTE keyNumber)
 		return true;
 	}
 	return false;
-}

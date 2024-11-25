@@ -1,4 +1,3 @@
-
 #include "WinApp.h"
 #include<cmath>
 #include"externals/imgui/imgui.h"
@@ -56,7 +55,7 @@ void WinApp::Initialiize()
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
 
-	WNDCLASS wc{};
+
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
 
@@ -73,7 +72,7 @@ void WinApp::Initialiize()
 	RegisterClass(&wc);
 
 	//ウィンドウの生成
-	HWND hwnd = CreateWindow(
+	hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
@@ -116,4 +115,12 @@ void WinApp::Initialiize()
 
 void WinApp::Update()
 {
+}
+
+void WinApp::Finalize()
+{
+	CloseWindow(hwnd);
+
+	//終了処理
+	CoUninitialize();
 }
