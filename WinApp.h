@@ -1,37 +1,39 @@
 #pragma once
-#include"Windows.h"
-#include <cstdint>
-class WinApp
-{
+#include<Windows.h>
+#include<cstdint>
+#include<string>
+#include<format>
+#include"externals/imgui/imgui.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
-public://静的メンバ変数
+// WindowsAPI
+class WinApp{
+public://メンバ関数
+	//初期化
+	void Initialize();
+	//メッセージの処理
+	bool ProcessMessge();
+	
+	//ウィンドウプロシージャ
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	//定数
-	static const int32_t kCLientWidth = 1280;
-	static const int32_t kCLientHeight = 720;
-
-	//初期化
-public://メンバ変数
-	void Initialiize();
-	//更新
-	void Update();
-
-	//終了
+	//終了処理
 	void Finalize();
 
-	//getter
+
+	//Getter
 	HWND GetHwnd()const { return hwnd; }
-	HINSTANCE GetHInstance() const { return wc.hInstance; }
-
-	//メッセージの処理
-	bool ProcessMessage();
-
-private://関数
-	//ウインドウハンドル
+	HINSTANCE GetHInstance()const { return wc.hInstance; }
+public:
+	//クライアント領域のサイズ
+	static const int32_t kClientWidth = 1280;
+	static const int32_t kClientHeight = 720;
+private:
 	HWND hwnd = nullptr;
-
-	//ウインドウクラスの設定
 	WNDCLASS wc{};
+
+
 };
+
