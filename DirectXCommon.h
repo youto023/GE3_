@@ -183,6 +183,7 @@ private://メンバ関数
 	void UpdateFixFPS();
 
 	std::chrono::steady_clock::time_point reference_;
+	void Finailze();
 
 private:
 

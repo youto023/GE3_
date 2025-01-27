@@ -75,7 +75,7 @@ void DirectXCommon::UpdateFixFPS(){
 
 
 
-void DirectXCommon::Initialize(WinApp* winApp) {
+void DirectXCommon::Initialize(WinApp* winAppconst ) {
 	//NULL検出
 	assert(winApp);
 
@@ -624,6 +624,9 @@ void DirectXCommon::CreateDxcCompiler() {
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	assert(SUCCEEDED(hr));
 }
+void Finailze() {
+	CloseHandle(Fenceevent);
+}
 
 void DirectXCommon::ImGuiInitialize() {
 	//　ImGuiの初期化。詳細はさして重要ではないため解説は省略する。
@@ -639,4 +642,5 @@ void DirectXCommon::ImGuiInitialize() {
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
 	);
+
 }
