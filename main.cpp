@@ -4,33 +4,26 @@
 #include<format>
 #include<cassert>
 #include<dxgidebug.h>
-
 #include<fstream>
 #include<sstream>
 #include"externals/imgui/imgui_impl_dx12.h"
 #include"externals/imgui/imgui_impl_win32.h"
 #include"externals/DirectXTex/DirectXTex.h"
-
-///自作関数
+#include"math/Vector4.h"
+#include"math/Vector3.h"
+#include"math/Vector2.h"
 #include"input.h"
 #include"WinApp.h"
 #include"DirectXCommon.h"
-#include"D3DResourceLeakChecker.h"
-
 #include"Matrix.h"
 #include"Transform.h"
-
 #include"Logger.h"
 #include"StringUtility.h"
-
+#include"D3DResourceLeakChecker.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxcompiler.lib")
-
-
-
-
 
 struct VertexData {
 	Vector4 position;
@@ -47,7 +40,6 @@ struct ModelData {
 	MaterialData material;
 };
 
-
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
 	ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {
 	//ディスクリプタヒープの生成
@@ -61,11 +53,6 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
 }
-
-
-
-
-
 
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる実数の宣言
@@ -119,18 +106,21 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			position.x *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
-		} else if (identifier == "vt") {
+		}
+		else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
 			texcoords.push_back(texcoord);
-		} else if (identifier == "vn") {
+		}
+		else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
 			normal.x *= -1.0f;
 			normals.push_back(normal);
 
 			//4.ModelDataを返す
-		} else if (identifier == "f") {
+		}
+		else if (identifier == "f") {
 			VertexData triangle[3];
 			//面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
@@ -161,7 +151,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			modelData.vertices.push_back(triangle[2]);
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
-		} else if (identifier == "mmtllib") {
+		}
+		else if (identifier == "mmtllib") {
 			//materialTemplateLibraryファイルの名前を取得する
 			std::string materialFilename;
 			s >> materialFilename;
@@ -179,7 +170,9 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 //windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	//リンクチェッカー
 	D3DResourceLeakChecker leakCheck;
+	
 	//ポインタ
 	WinApp* winApp = nullptr;
 	winApp = new WinApp();
@@ -191,31 +184,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-	//DebugLayerを表示する
-	// 1.デバックコントローラーを初期化する
-	// 2.デバックコントローラーに値が入るとif文が作動する
-	// 3.デバックレイヤーを有効化する
-	// 4.GPU側でもチェックを行うようにする
-
-
-
-
-
-
 	//文字列を格納する
 	std::string str0{ "STRING!!!" };
 
 	//整数を文字列にする
 	std::string str1{ std::to_string(10) };
-
-
-
-	//ここから下に05の資料を書いていく
-
-	//DXGIファクトリーの作成
-
-
-
 
 	//ポインタ
 	Input* input = nullptr;
@@ -224,14 +197,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input = new Input();
 	input->Initialize(winApp);
 
-
-	//段階的に分けてエラーと警告を表示し、停止する。
-	// 1.インフォキューを生成する
-	// 2.インフォキューに値が入ったらif文が作動する
-	// 3.やばいエラーの時に作動する
-	// 4.エラーの時に止まる
-	// 5.警告時に止まる
-	// 6.何もなかったら開放する。
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue = nullptr;//1.end
@@ -242,16 +207,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//エラーの時に止まる
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 
-		////警告時に止まる
-		//infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+		//警告時に止まる
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 
 		//開放
 		//infoQueue->Release();
-
-		// エラーと警告の抑制（windowsの不具合によるエラー表示などを無視するための設定をする）
-		// 1.抑制するメッセージのIDを出す
-		// 2.抑制するレベルを設定する
-		// 3.指定したメッセージの表示を抑制する
 
 		//抑制するメッセージのID
 		D3D12_MESSAGE_ID denyIds[] = {
@@ -273,25 +233,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 #endif // _DEBUG
-
-
-
-	//01_00の12ページから始まる4/17
-
-
-
-
-
-
-	//01_00の20ページから始まる4/18
-
-
-
-
-
-
-
-	//02_00_29ページの内容
 
 	// RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -380,10 +321,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	resterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//Shaderをコンパイルする
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = dxCommon->CompileShader(L"Resources/shaders/Object3D.VS.hlsl",L"vs_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = dxCommon->CompileShader(L"Resources/shaders/Object3D.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon->CompileShader(L"Resources/shaders/Object3D.PS.hlsl",L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon->CompileShader(L"Resources/shaders/Object3D.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -434,20 +375,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//頂点リソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource( sizeof(VertexData) * modelData.vertices.size());
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
 
 	//Sprite用の頂点リソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = dxCommon->CreateBufferResource( sizeof(VertexData) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = dxCommon->CreateBufferResource(sizeof(VertexData) * 6);
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = dxCommon->CreateBufferResource( sizeof(uint32_t) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = dxCommon->CreateBufferResource(sizeof(uint32_t) * 6);
 
 	//マテリアル用のリソースを作る。今回はcolor１つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = dxCommon->CreateBufferResource( sizeof(Vector4));
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = dxCommon->CreateBufferResource(sizeof(Vector4));
 
 
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = dxCommon->CreateBufferResource( sizeof(Matrix4x4));
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = dxCommon->CreateBufferResource(sizeof(Matrix4x4));
 	//データを読み込む
 	Matrix4x4* wvpData = nullptr;
 	//書き込むためのアドレスを取得
@@ -456,7 +397,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*wvpData = MakeIdentity4x4();
 
 	//Sprite用のTransformationMatrix用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = dxCommon->CreateBufferResource( sizeof(Matrix4x4));
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = dxCommon->CreateBufferResource(sizeof(Matrix4x4));
 	//データを読み込む
 	Matrix4x4* transformtionMatrixDataSprite = nullptr;
 	//書き込むためのアドレスを取得
@@ -465,16 +406,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*transformtionMatrixDataSprite = MakeIdentity4x4();
 
 	//マテリアルにデータを書き込む
-	Vector4* materialData = nullptr;
-	//
+	Vector4* MaterialData = nullptr;
+	
 	Matrix4x4* transformationMatrixDate = nullptr;
 
 	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&MaterialData));
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDate));
 
 	//今回は赤を書き込んでみる
-	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+	*MaterialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
 	// 頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -574,7 +515,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = DirectXCommon::LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource( metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
 	dxCommon->UploadTextureData(textureResource.Get(), mipImages);
 
 	//DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
@@ -605,16 +546,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	while (true) {
 
 		//Windowsのメッセージ処理
-		if (winApp->ProcessMessge()){
+		if (winApp->ProcessMessage()) {
 			//ゲームループを抜ける
 			break;
 		}
-		
+
 		//ゲームの処理
 
 		//入力の更新
 		input->Update();
-		if (input->ReleseKey(DIK_0)) {
+		if (input->TriggerKey(DIK_0)) {
 			OutputDebugStringA("Hit 0\n");
 		}
 		//if (input->PushKey(DIK_UP) || input->PushKey(DIK_DOWN) || input->PushKey(DIK_LEFT) || input->PushKey(DIK_RIGHT)) {
@@ -647,7 +588,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ImGui::ShowDemoWindow();
 		ImGui::Begin("Window");
 		//変える変数の名前,変えるデータ,変える速度
-		ImGui::ColorEdit3("color", &materialData->x);
+		ImGui::ColorEdit3("color", &MaterialData->x);
 		//ImGui::DragFloat3("CameraTranslate", &cameraTransform, 0.01f);
 		//ImGui::DragFloat3("CameraTranslate", &cameraRotate.x, 0.01f);
 		//ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
@@ -664,17 +605,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*wvpData = worldMatrix;
 
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
+		Matrix4x4 viewMatrix = Invers(cameraMatrix);
+		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kCLientWidth) / float(WinApp::kCLientHeight), 0.1f, 100.0f);
 		//WVPMatrixを作る
-		Matrix4x4 worldViewProjectionMatrix = Multply(worldMatrix, Multply(viewMatrix, projectionMatrix));
+		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 		*transformationMatrixDate = worldViewProjectionMatrix;
 
 		//Sprite用のworldViewProjectionMatrixを作る
 		Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 		Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-		Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-		Matrix4x4 worldViewProjectionMatrixSprite = Multply(worldMatrixSprite, Multply(viewMatrixSprite, projectionMatrixSprite));
+		Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kCLientWidth), float(WinApp::kCLientHeight), 0.0f, 100.0f);
+		Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 		*transformtionMatrixDataSprite = worldViewProjectionMatrixSprite;
 
 
@@ -723,7 +664,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
-		//　実際のcommandListのImGuiの描画コマンドを積む
+		//　実際のcommandListのImGuiの描画コマンドを積...........む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
 
 
@@ -744,33 +685,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//入力開放
 	delete input;
 
-
-
+	
+	
+	dxCommon->Finalize();
+	delete dxCommon;
 	//ImGuiの終了処理。詳細はさして重要ではないので解説は省略する。
 	//こういうもんである。初期化と逆順に行う
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
-
-	//開放処理
-	
 	//#ifdef _DEBUG
 	//		debugController->Release();
 	//#endif // _DEBUG
-
-
-
 
 	//windowsAPIの終了処理
 	winApp->Finalize();
 
 	//WindowsAPI開放処理
 	delete winApp;
-
-
-
-
 
 	return 0;
 }

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXGame", "DirectXGame.vcxproj", "{D7670E97-3F82-40CC-88BD-1933D6512E54}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXGame", "DirectXGame.vcxproj", "{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目", "ソリューション項目", "{CD37D9DE-67C4-44D7-B077-EB0FC05C7A17}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目", "ソリューション項目", "{F71D8EF1-8EA2-4C06-BC8F-A231F43D3256}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
@@ -19,12 +19,12 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D7670E97-3F82-40CC-88BD-1933D6512E54}.Debug|x64.ActiveCfg = Debug|x64
-		{D7670E97-3F82-40CC-88BD-1933D6512E54}.Debug|x64.Build.0 = Debug|x64
-		{D7670E97-3F82-40CC-88BD-1933D6512E54}.Profile|x64.ActiveCfg = Release|x64
-		{D7670E97-3F82-40CC-88BD-1933D6512E54}.Profile|x64.Build.0 = Release|x64
-		{D7670E97-3F82-40CC-88BD-1933D6512E54}.Release|x64.ActiveCfg = Release|x64
-		{D7670E97-3F82-40CC-88BD-1933D6512E54}.Release|x64.Build.0 = Release|x64
+		{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}.Debug|x64.ActiveCfg = Debug|x64
+		{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}.Debug|x64.Build.0 = Debug|x64
+		{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}.Profile|x64.ActiveCfg = Release|x64
+		{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}.Profile|x64.Build.0 = Release|x64
+		{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}.Release|x64.ActiveCfg = Release|x64
+		{3C8C0C1A-C154-4AD8-8B0D-A1BF0B430C11}.Release|x64.Build.0 = Release|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.ActiveCfg = Debug|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.Build.0 = Debug|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.ActiveCfg = Profile|x64
@@ -36,6 +36,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C022FB5C-A7A3-48CF-A5AF-ADEC729E454B}
+		SolutionGuid = {762C9E7B-6DC1-4A92-95AF-DEEB4DA45BE9}
 	EndGlobalSection
 EndGlobal

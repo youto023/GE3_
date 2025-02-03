@@ -6,9 +6,11 @@
 #include"WinApp.h"
 #include"externals/imgui/imgui_impl_dx12.h"
 #include"externals/imgui/imgui_impl_win32.h"
+#include <thread>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+
 
 using namespace Microsoft::WRL;
 
@@ -39,47 +41,56 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(ID3D12Descript
 	return handleGPU;
 }
 
-void DirectXCommon::InitializeFixFPS(){
+void DirectXCommon::InitializeFixFPS()
+{
+
 	//現在時間を記録する
 	reference_ = std::chrono::steady_clock::now();
+
+
 }
 
-void DirectXCommon::UpdateFixFPS(){
-	//1/60秒ピッタリの時間
+void DirectXCommon::UpdateFixFPS()
+{
+
+	//1/60ぴったりの時間
 	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
-	//1/60秒よりわずかに短い時間
+
+	//1/60よりわずかの短い時間
 	const std::chrono::microseconds kMinCheckTime(uint64_t(1000000.0f / 65.0f));
 
 	//現在時間を取得する
 	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-	//前回記録からの経過時間を取得する
-	std::chrono::microseconds elapsed =
-		std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
 
-
-
-	//ここでダブルバッファの活用をやっておくとより良いものになる
+	//前回の記録からの経過時間を取得する
+	std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
 
 	//1/60(よりわずかに短い時間)経っていない場合
-	if (elapsed < kMinCheckTime) {
-		//1/60秒経過するまで微小なスリープを繰り返す
+	if (elapsed < kMinTime) {
+		//1/60経過するまで微小なスリープを繰り返す
 		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
 			//1マイクロ秒スリープ
 			std::this_thread::sleep_for(std::chrono::microseconds(1));
+
 		}
+
 	}
-	// 現在の時間を記録する
+
+	//現在の時間を記録する
 	reference_ = std::chrono::steady_clock::now();
 }
 
+void DirectXCommon::Finalize()
+{
+	//開放処理
+	CloseHandle(fenceEvent);
+}
 
-
-
-void DirectXCommon::Initialize(WinApp* winAppconst ) {
+void DirectXCommon::Initialize(WinApp* winApp) {
 	//NULL検出
 	assert(winApp);
 
-	//FPS固定初期化
+	//FPS固定化初期化
 	InitializeFixFPS();
 
 	this->winApp_ = winApp;
@@ -166,9 +177,6 @@ void DirectXCommon::PostDraw() {
 	hr = commandList_->Close();
 	assert(SUCCEEDED(hr));//4.end
 
-	//FPS固定
-	UpdateFixFPS();
-
 	//コマンドをキックする
 	// 1.CommandListが完成したので、CommandQueueを使ってGPUにキックする
 	// 2.実行が終わったら、画面が完成したので画面の交換をしてもらう
@@ -176,6 +184,9 @@ void DirectXCommon::PostDraw() {
 	//	b.画面交換用のExecuteCommandListを行っていると考えると良い
 	// 3.画面の交換をしたら次のフレームの準備をする
 	//	a.実際に保存する場所を管理しているAllocatorとCommandListの両方をResetする
+
+	//FPS固定
+	UpdateFixFPS();
 
 	//GPUにコマンドリストの実行を行わせる
 	ID3D12CommandList* commandLists[] = { commandList_.Get() };
@@ -211,7 +222,7 @@ void DirectXCommon::PostDraw() {
 	assert(SUCCEEDED(hr));//3.end
 }
 
-Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile){
+Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile) {
 	// ここの中身をこの後書いていく
 	// 1.hlslファイルを読み込む
 	Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader,path:{},profile:{}\n", filePath, profile)));
@@ -273,7 +284,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInDytes){
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInDytes) {
 	// 頂点リソース用のヒープの設定
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
 	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;//UploadHeapを使う
@@ -302,7 +313,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource( const DirectX::TexMetadata& metadata){
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata) {
 	// 1.matadataを基にResourceの作成
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = UINT(metadata.width);//Textureの幅
@@ -459,8 +470,8 @@ void DirectXCommon::CreateCommandRelevance() {
 
 void DirectXCommon::CreateSwapChain() {
 
-	swapChainDesc.Width = WinApp::kClientWidth;		//画面の幅。ウィンドウのクライアント領域を同じものにしておく。
-	swapChainDesc.Height = WinApp::kClientHeight;	//画面の高さ。ウィンドウのクライアント領域を同じものにしておく。
+	swapChainDesc.Width = WinApp::kCLientWidth;		//画面の幅。ウィンドウのクライアント領域を同じものにしておく。
+	swapChainDesc.Height = WinApp::kCLientHeight;	//画面の高さ。ウィンドウのクライアント領域を同じものにしておく。
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;//色の形式
 	swapChainDesc.SampleDesc.Count = 1;//マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;//描画のターゲットとして利用する
@@ -473,21 +484,17 @@ void DirectXCommon::CreateSwapChain() {
 }
 
 void DirectXCommon::CreateDepthStencilTextureResource() {
-	/*******************************生成**************************************/
 
 	// 生成するResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = winApp_->kClientWidth;						//Textureの幅
-	resourceDesc.Height = winApp_->kClientHeight;					//Textureの高さ
+	resourceDesc.Width = winApp_->kCLientWidth;						//Textureの幅
+	resourceDesc.Height = winApp_->kCLientHeight;					//Textureの高さ
 	resourceDesc.MipLevels = 1;										//mipmapの数
 	resourceDesc.DepthOrArraySize = 1;								//奥行き or 配列Textureの配列数
 	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;			//DepthStencilとして利用可能なフォーマット
 	resourceDesc.SampleDesc.Count = 1;								//サンプリングカウント。1固定。
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;	//２次元
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;	//DepthStencilとして使う通知
-	/*******************************生成**************************************/
-
-
 
 	//利用するHeapの設定
 	D3D12_HEAP_PROPERTIES heapProperties{};
@@ -498,23 +505,20 @@ void DirectXCommon::CreateDepthStencilTextureResource() {
 	depthClearValue.DepthStencil.Depth = 1.0f;				 //1.0f(最大値)でクリア
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;	 //フォーマット。Resourceと合わせる
 
-	/*******************************生成**************************************/
 
 	//depthStencilResourceの生成
 	depthStencilResource_ = nullptr;//初期化
-	 hr = device_->CreateCommittedResource(
+	hr = device_->CreateCommittedResource(
 		&heapProperties,					//Heapの設定
 		D3D12_HEAP_FLAG_NONE,				//Heapの特殊な設定。特になし。
 		&resourceDesc,						//Resourceの設定
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,	//深度値を書き込む状態にしておく
 		&depthClearValue,					//Clear最適値
-		 /***************受け渡し*******************/
+		/***************受け渡し*******************/
 		IID_PPV_ARGS(&depthStencilResource_)//作成するResourceポインタへのポインタ
-		 /***************受け渡し*******************/
+		/***************受け渡し*******************/
 	);
 	assert(SUCCEEDED(hr));
-	/*******************************生成**************************************/
-
 
 }
 
@@ -549,24 +553,17 @@ void DirectXCommon::RTVInitialize() {
 	//ディスクリプタの先頭を取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	for (uint32_t i = 0; i < 2; ++i){
-		rtvHandles[0] = rtvStartHandle;
-		rtvHandles[1].ptr = rtvHandles[0].ptr + device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-		device_->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandles[i]);
+	//まず１つ目を作る。一つ目は最初の所に作る。作る場所をこちらで指定してあげる必要がある。
+	rtvHandles[0] = rtvStartHandle;
+	device_->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
 
-	}
+	//２つ目のディスクリプタハンドルを得る(自力で)
+	//ポインタの位置をずらすみたいに大きくする。
+	rtvHandles[1].ptr = rtvHandles[0].ptr + device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	////まず１つ目を作る。一つ目は最初の所に作る。作る場所をこちらで指定してあげる必要がある。
-	//rtvHandles[0] = rtvStartHandle;
-	//device_->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
-
-	////２つ目のディスクリプタハンドルを得る(自力で)
-	////ポインタの位置をずらすみたいに大きくする。
-	//rtvHandles[1].ptr = rtvHandles[0].ptr + device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	////２つ目を作る
-	//device_->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
+	//２つ目を作る
+	device_->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
 
 }
 
@@ -578,7 +575,7 @@ void DirectXCommon::DepthStencilInitialize() {
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Format。基本的にResourceに合わせる
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;// 2dTexture
 	//DSVHeapの先頭にDSVを作る
-	device_->CreateDepthStencilView(depthStencilResource_.Get(), &dsvDesc, GetCPUDescriptorHandle(dsvDescriptorHeap.Get(),descriptorSizeDSV,0));
+	device_->CreateDepthStencilView(depthStencilResource_.Get(), &dsvDesc, GetCPUDescriptorHandle(dsvDescriptorHeap.Get(), descriptorSizeDSV, 0));
 
 }
 
@@ -593,8 +590,8 @@ void DirectXCommon::CreateFence() {
 
 void DirectXCommon::ViewportInitialize() {
 	//クライアント領域のサイズと一緒にして画面全体を表示
-	viewport.Width = WinApp::kClientWidth;
-	viewport.Height = WinApp::kClientHeight;
+	viewport.Width = WinApp::kCLientWidth;
+	viewport.Height = WinApp::kCLientHeight;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -606,9 +603,9 @@ void DirectXCommon::ViewportInitialize() {
 void DirectXCommon::CreateScissorRect() {
 	//基本的にビューポートと同じく系で構成されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = WinApp::kClientWidth;
+	scissorRect.right = WinApp::kCLientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = WinApp::kClientHeight;
+	scissorRect.bottom = WinApp::kCLientHeight;
 
 }
 
@@ -624,13 +621,10 @@ void DirectXCommon::CreateDxcCompiler() {
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	assert(SUCCEEDED(hr));
 }
-void Finailze() {
-	CloseHandle(Fenceevent);
-}
 
 void DirectXCommon::ImGuiInitialize() {
 	//　ImGuiの初期化。詳細はさして重要ではないため解説は省略する。
-	//　こうゆうもんである
+//　こうゆうもんである
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -641,6 +635,6 @@ void DirectXCommon::ImGuiInitialize() {
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
-	);
 
+	);
 }

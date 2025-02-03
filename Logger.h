@@ -1,6 +1,13 @@
 #pragma once
 #include<string>
-//ログ出力
-namespace Logger {
+
+namespace Logger
+{
+
+	//ログ出力
+
 	void Log(const std::string& message);
-}
+
+
+};
+

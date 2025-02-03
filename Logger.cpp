@@ -1,9 +1,15 @@
 #include "Logger.h"
 #include<Windows.h>
-#include <debugapi.h>
+
 
 namespace Logger {
-	void Log(const std::string& message) {
+
+	void Logger::Log(const std::string& message)
+	{
+
 		OutputDebugStringA(message.c_str());
+
+
 	}
 }
+

@@ -6,9 +6,9 @@
 #include<array>
 #include<dxcapi.h>
 #include<chrono>
-#include<thread>
 
 #include"externals/DirectXTex/DirectXTex.h"
+
 class WinApp;
 
 //DirectX基盤
@@ -50,7 +50,7 @@ public:
 	/// <param name="filePath">CompilerするShaderファイルへのパス</param>
 	/// <param name="profile">Compilerに使用するProfile</param>
 	/// <returns></returns>
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath,const wchar_t* profile);
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
 
 	/// <summary>
 	/// バッファリソースの生成
@@ -65,7 +65,7 @@ public:
 	/// <param name="device">デバイス</param>
 	/// <param name="metadata"></param>
 	/// <returns></returns>
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource( const DirectX::TexMetadata& metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
 	/// <summary>
 	/// テクスチャデータの転送
 	/// </summary>
@@ -87,6 +87,9 @@ public:
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap() const { return rtvDescriptorHeap.Get(); }
 	HANDLE GetFenceEvent() const { return fenceEvent; }
 
+
+
+	void Finalize();
 private://メンバ関数
 
 
@@ -173,17 +176,16 @@ private://メンバ関数
 	/// <returns></returns>
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	/// <summary>
-	/// FPS固定初期化
-	/// </summary>
+	//FPS固定初期化
 	void InitializeFixFPS();
-	/// <summary>
-	/// FPS固定更新
-	/// </summary>
+
+	//FPS固定更新
 	void UpdateFixFPS();
 
+	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
-	void Finailze();
+
+	
 
 private:
 
@@ -251,7 +253,5 @@ private:
 	HANDLE fenceEvent;
 	//バリア
 	D3D12_RESOURCE_BARRIER barrier{};
-
-	
 
 };
